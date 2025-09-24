@@ -1,49 +1,50 @@
 pipeline {
     agent any
 
-    environment {
-        VENV_DIR = 'venv'
-    }
-
     stages {
         stage('Clone Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/Divya112989/devops-task.git'
+                git url: 'https://github.com/Divya112989/devops-task.git', branch: 'main'
             }
         }
-     
-    stage('Setup Python Environment') {
+
+        stage('Check Python') {
             steps {
-                 bat 'python -m venv venv'
-                 bat 'venv\\Scripts\\pip install -r requirements.txt'
-    }
-}
+                bat '"C:\\Users\\divya\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" --version'
+            }
+        }
+
+        stage('Setup Python Environment') {
+            steps {
+                // Create virtual environment
+                bat '"C:\\Users\\divya\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" -m venv venv'
+                // Install dependencies inside venv
+                bat 'venv\\Scripts\\pip install -r requirements.txt'
+            }
+        }
 
         stage('Run Flask Check') {
             steps {
-                bat "%VENV_DIR%\\Scripts\\activate && python -m flask --version"
+                bat 'venv\\Scripts\\python -m flask --version'
             }
         }
 
         stage('Terraform Init & Plan') {
             steps {
                 dir('terraform') {
-                    bat "terraform init"
-                    bat "terraform plan"
+                    bat 'terraform init'
+                    bat 'terraform plan'
                 }
             }
         }
 
-        // Optional: apply stage (careful with real cloud resources)
         stage('Terraform Apply') {
             steps {
                 dir('terraform') {
-                    bat "terraform apply -auto-approve"
+                    bat 'terraform apply -auto-approve'
                 }
             }
         }
-
-       
     }
 
     post {
