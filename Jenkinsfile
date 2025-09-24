@@ -12,15 +12,6 @@ pipeline {
             }
         }
 
-        stage('Setup Python Environment') {
-            steps {
-                // Create virtual environment
-                bat "python -m venv %VENV_DIR%"
-                // Activate venv and install dependencies
-                bat "%VENV_DIR%\\Scripts\\activate && pip install -r requirements.txt"
-            }
-        }
-
         stage('Run Flask Check') {
             steps {
                 bat "%VENV_DIR%\\Scripts\\activate && python -m flask --version"
