@@ -11,6 +11,13 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/Divya112989/devops-task.git'
             }
         }
+     
+    stage('Setup Python Environment') {
+            steps {
+                 bat 'python -m venv venv'
+                 bat 'venv\\Scripts\\pip install -r requirements.txt'
+    }
+}
 
         stage('Run Flask Check') {
             steps {
@@ -36,13 +43,7 @@ pipeline {
             }
         }
 
-        stage('Setup Python Environment') {
-            steps {
-                 bat 'python -m venv venv'
-                 bat 'venv\\Scripts\\pip install -r requirements.txt'
-    }
-}
-
+       
     }
 
     post {
