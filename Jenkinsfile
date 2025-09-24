@@ -44,6 +44,14 @@ pipeline {
                 }
             }
         }
+
+        stage('Setup Python Environment') {
+            steps {
+                 bat 'python -m venv venv'
+                 bat 'venv\\Scripts\\pip install -r requirements.txt'
+    }
+}
+
     }
 
     post {
