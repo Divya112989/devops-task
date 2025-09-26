@@ -16,3 +16,10 @@ venv/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+*.tfvars
+*.auto.tfvars
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+
