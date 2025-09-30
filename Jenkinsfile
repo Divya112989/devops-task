@@ -45,12 +45,11 @@ pipeline {
                 }
             }
         }
-    }
-
-stage('Deploy to Azure VM') {
-    steps {
-        sshPublisher(
-            publishers: [
+    
+         stage('Deploy to Azure VM') {
+            steps {
+             sshPublisher(
+              publishers: [
                 sshPublisherDesc(
                     configName: 'azure-vm',
                     transfers: [
