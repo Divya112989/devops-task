@@ -56,31 +56,16 @@ pipeline {
             }
         }
 
-        stage('Deploy to Azure VM') {
-            steps {
-                sshPublisher(
-                    publishers: [
-                        sshPublisherDesc(
-                            configName: 'azure-vm',  // Must exist in Jenkins SSH Sites
-                            transfers: [
-                                sshTransfer(
-                                    sourceFiles: '**/*',
-                                    removePrefix: '',
-                                    remoteDirectory: '/home/azureuser/app',
-                                    execCommand: '''
-                                        cd /home/azureuser/app
-                                        python3 -m venv venv
-                                        source venv/bin/activate
-                                        pip install -r requirements.txt
-                                        nohup python app.py &
-                                    '''
-                                )
-                            ]
-                        )
-                    ]
-                )
-            }
+        stage('Deploy App to Azure VM') {
+    steps {
+        sshagent(['my-ssh-cred-id']) {
+            sh '''
+                ssh -o StrictHostKeyChecking=no azureuser@52.234.153.165 "cd /app && git pull && nohup python3 app.py > app.log 2>&1 &"
+            '''
         }
+    }
+}
+
     } // end of stages
 
     post {

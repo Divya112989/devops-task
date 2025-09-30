@@ -129,6 +129,11 @@ resource "azurerm_linux_virtual_machine" "vm_dev" {
     azurerm_network_interface.nic_dev.id,
   ]
 
+admin_ssh_key {
+    username   = "azureuser"
+    public_key = file("~/.ssh/id_rsa.pub")
+  }
+  
   admin_password = "YourStrongP@ssword123"   # for testing only (not in prod!)
 
   os_disk {
