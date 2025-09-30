@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     environment {
+        // Use Jenkins credentials for Azure SP
         ARM_CLIENT_ID       = credentials('ARM_CLIENT_ID')
         ARM_CLIENT_SECRET   = credentials('ARM_CLIENT_SECRET')
         ARM_TENANT_ID       = credentials('ARM_TENANT_ID')
@@ -17,13 +18,13 @@ pipeline {
 
         stage('Check Python') {
             steps {
-                bat 'python --version'
+                bat '"C:\\Users\\divya\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" --version'
             }
         }
 
         stage('Setup Python Environment') {
             steps {
-                bat 'python -m venv venv'
+                bat '"C:\\Users\\divya\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" -m venv venv'
                 bat 'venv\\Scripts\\pip install -r requirements.txt'
             }
         }
@@ -53,10 +54,14 @@ pipeline {
 
         stage('Deploy App to Azure VM') {
             steps {
-                sshagent(['my-ssh-cred-id']) {
-                    bat '''
-                        ssh -o StrictHostKeyChecking=no azureuser@52.234.153.165 "cd /app && git pull && nohup python3 app.py > app.log 2>&1 &"
-                    '''
+                // Use Jenkins SSH private key credentials
+                withCredentials([sshUserPrivateKey(credentialsId: 'my-ssh-cred-id',
+                                                   keyFileVariable: 'SSH_KEY',
+                                                   usernameVariable: 'SSH_USER')]) {
+                    bat """
+                    echo Deploying app to Azure VM...
+                    ssh -o StrictHostKeyChecking=no -i %SSH_KEY% %SSH_USER%@52.234.153.165 "cd /app && git pull && nohup python3 app.py > app.log 2>&1 &"
+                    """
                 }
             }
         }
