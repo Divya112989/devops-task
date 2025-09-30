@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // Azure SP credentials from Jenkins credentials
+        // Azure SP credentials from Jenkins
         ARM_CLIENT_ID       = credentials('ARM_CLIENT_ID')
         ARM_CLIENT_SECRET   = credentials('ARM_CLIENT_SECRET')
         ARM_TENANT_ID       = credentials('ARM_TENANT_ID')
@@ -18,28 +18,28 @@ pipeline {
 
         stage('Check Python') {
             steps {
-                sh 'python3 --version'
+                bat '"C:\\Users\\divya\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" --version'
             }
         }
 
         stage('Setup Python Environment') {
             steps {
-                sh 'python3 -m venv venv'
-                sh 'venv/bin/pip install -r requirements.txt'
+                bat '"C:\\Users\\divya\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" -m venv venv'
+                bat 'venv\\Scripts\\pip install -r requirements.txt'
             }
         }
 
         stage('Run Flask Check') {
             steps {
-                sh 'venv/bin/python -m flask --version'
+                bat 'venv\\Scripts\\python -m flask --version'
             }
         }
 
         stage('Terraform Init & Plan') {
             steps {
                 dir('terraform') {
-                    sh 'terraform init'
-                    sh 'terraform plan'
+                    bat 'terraform init'
+                    bat 'terraform plan'
                 }
             }
         }
@@ -47,7 +47,7 @@ pipeline {
         stage('Terraform Apply') {
             steps {
                 dir('terraform') {
-                    sh 'terraform apply -auto-approve'
+                    bat 'terraform apply -auto-approve'
                 }
             }
         }
@@ -55,9 +55,9 @@ pipeline {
         stage('Deploy App to Azure VM') {
             steps {
                 sshagent(credentials: ['my-ssh-cred-id']) {
-                    sh '''
-                        echo "Deploying app to Azure VM..."
-                        ssh -o StrictHostKeyChecking=no azureuser@52.234.153.165 "mkdir -p /app && cd /app && git pull || git clone https://github.com/Divya112989/devops-task.git . && nohup python3 app.py > app.log 2>&1 &"
+                    bat '''
+                    echo Deploying app to Azure VM...
+                    ssh -o StrictHostKeyChecking=no azureuser@52.234.153.165 "mkdir -p /app && cd /app && git pull || git clone https://github.com/Divya112989/devops-task.git . && nohup python3 app.py > app.log 2>&1 &"
                     '''
                 }
             }
