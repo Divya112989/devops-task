@@ -47,6 +47,32 @@ pipeline {
         }
     }
 
+stage('Deploy to Azure VM') {
+    steps {
+        sshPublisher(
+            publishers: [
+                sshPublisherDesc(
+                    configName: 'azure-vm',
+                    transfers: [
+                        sshTransfer(
+                             sourceFiles: 'app/**,requirements.txt',
+                            removePrefix: '',
+                            remoteDirectory: '/home/azureuser/app',
+                            execCommand: '''
+                                cd /home/azureuser/app
+                                python3 -m venv venv
+                                source venv/bin/activate
+                                pip install -r requirements.txt
+                                nohup python app.py &
+                            '''
+                        )
+                    ]
+                )
+            ]
+        )
+    }
+}
+
     post {
         always {
             echo 'Pipeline finished.'
