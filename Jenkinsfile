@@ -1,6 +1,14 @@
 pipeline {
     agent any
 
+    environment {
+        // Use Jenkins credentials for Azure SP
+        ARM_CLIENT_ID       = credentials('ARM_CLIENT_ID')
+        ARM_CLIENT_SECRET   = credentials('ARM_CLIENT_SECRET')
+        ARM_TENANT_ID       = credentials('ARM_TENANT_ID')
+        ARM_SUBSCRIPTION_ID = credentials('ARM_SUBSCRIPTION_ID')
+    }
+
     stages {
         stage('Clone Repository') {
             steps {
@@ -16,7 +24,9 @@ pipeline {
 
         stage('Setup Python Environment') {
             steps {
+                // Create virtual environment
                 bat '"C:\\Users\\divya\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" -m venv venv'
+                // Install dependencies
                 bat 'venv\\Scripts\\pip install -r requirements.txt'
             }
         }
@@ -27,31 +37,31 @@ pipeline {
             }
         }
 
-         stage('Terraform Init & Plan') {
-             steps {
-               dir('terraform') {
-                bat 'terraform init'
-                bat 'terraform plan -var-file=terraform.tfvars'
-        }
-    }
-}
-
-
-        stage('Terraform Apply') {
+        stage('Terraform Init & Plan') {
             steps {
                 dir('terraform') {
-                    bat 'terraform apply -auto-approve'
+                    // Initialize Terraform with backend
+                    bat 'terraform init'
+                    // Plan with variable file
+                    bat 'terraform plan -var-file=terraform.tfvars'
                 }
             }
         }
 
-        // <-- Move this stage inside 'stages' block
+        stage('Terraform Apply') {
+            steps {
+                dir('terraform') {
+                    bat 'terraform apply -var-file=terraform.tfvars -auto-approve'
+                }
+            }
+        }
+
         stage('Deploy to Azure VM') {
             steps {
                 sshPublisher(
                     publishers: [
                         sshPublisherDesc(
-                            configName: 'azure-vm',
+                            configName: 'azure-vm',  // Must exist in Jenkins SSH Sites
                             transfers: [
                                 sshTransfer(
                                     sourceFiles: '**/*',
@@ -71,7 +81,6 @@ pipeline {
                 )
             }
         }
-
     } // end of stages
 
     post {
