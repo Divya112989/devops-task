@@ -27,14 +27,15 @@ pipeline {
             }
         }
 
-        stage('Terraform Init & Plan') {
-            steps {
-                dir('terraform') {
-                    bat 'terraform init'
-                    bat 'terraform plan'
-                }
-            }
+         stage('Terraform Init & Plan') {
+             steps {
+               dir('terraform') {
+                bat 'terraform init'
+                bat 'terraform plan -var-file=terraform.tfvars'
         }
+    }
+}
+
 
         stage('Terraform Apply') {
             steps {
