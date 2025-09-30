@@ -16,9 +16,7 @@ pipeline {
 
         stage('Setup Python Environment') {
             steps {
-                // Create virtual environment
                 bat '"C:\\Users\\divya\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" -m venv venv'
-                // Install dependencies inside venv
                 bat 'venv\\Scripts\\pip install -r requirements.txt'
             }
         }
@@ -45,32 +43,35 @@ pipeline {
                 }
             }
         }
-    
-         stage('Deploy to Azure VM') {
+
+        // <-- Move this stage inside 'stages' block
+        stage('Deploy to Azure VM') {
             steps {
-             sshPublisher(
-              publishers: [
-                sshPublisherDesc(
-                    configName: 'azure-vm',
-                    transfers: [
-                        sshTransfer(
-                             sourceFiles: 'app/**,requirements.txt',
-                            removePrefix: '',
-                            remoteDirectory: '/home/azureuser/app',
-                            execCommand: '''
-                                cd /home/azureuser/app
-                                python3 -m venv venv
-                                source venv/bin/activate
-                                pip install -r requirements.txt
-                                nohup python app.py &
-                            '''
+                sshPublisher(
+                    publishers: [
+                        sshPublisherDesc(
+                            configName: 'azure-vm',
+                            transfers: [
+                                sshTransfer(
+                                    sourceFiles: '**/*',
+                                    removePrefix: '',
+                                    remoteDirectory: '/home/azureuser/app',
+                                    execCommand: '''
+                                        cd /home/azureuser/app
+                                        python3 -m venv venv
+                                        source venv/bin/activate
+                                        pip install -r requirements.txt
+                                        nohup python app.py &
+                                    '''
+                                )
+                            ]
                         )
                     ]
                 )
-            ]
-        )
-    }
-}
+            }
+        }
+
+    } // end of stages
 
     post {
         always {
