@@ -43,7 +43,7 @@ pipeline {
                     // Initialize Terraform with backend
                     bat 'terraform init'
                     // Plan with variable file
-                    bat 'terraform plan -var-file=terraform.tfvars'
+                    bat 'terraform plan'
                 }
             }
         }
