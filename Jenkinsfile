@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // Azure SP credentials from Jenkins
+        // Azure credentials (Terraform will use these)
         ARM_CLIENT_ID       = credentials('ARM_CLIENT_ID')
         ARM_CLIENT_SECRET   = credentials('ARM_CLIENT_SECRET')
         ARM_TENANT_ID       = credentials('ARM_TENANT_ID')
@@ -52,13 +52,17 @@ pipeline {
             }
         }
 
-   stage('Deploy App to Azure VM') {
-    steps {
-        sshagent(credentials: ['azure-ssh-key']) {
-            bat 'ssh -o StrictHostKeyChecking=no azureuser@52.234.153.165 "cd /app && git pull && nohup python3 app.py > app.log 2>&1 &"'
+        stage('Deploy App to Azure VM') {
+            steps {
+                sshagent(credentials: ['my-ssh-cred-id']) {
+                    sh '''
+                        echo "Deploying app to Azure VM..."
+                        ssh -o StrictHostKeyChecking=no azureuser@52.234.153.165 "cd /app && git pull && nohup python3 app.py --host=0.0.0.0 --port=5000 > app.log 2>&1 &"
+                    '''
+                }
+            }
         }
     }
-}
 
     post {
         always {
