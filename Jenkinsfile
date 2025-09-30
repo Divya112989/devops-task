@@ -51,7 +51,7 @@ pipeline {
         stage('Terraform Apply') {
             steps {
                 dir('terraform') {
-                    bat 'terraform apply -var-file=terraform.tfvars -auto-approve'
+                    bat 'terraform apply -auto-approve'
                 }
             }
         }
