@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // Use Jenkins credentials for Azure SP
+        // Azure SP credentials from Jenkins
         ARM_CLIENT_ID       = credentials('ARM_CLIENT_ID')
         ARM_CLIENT_SECRET   = credentials('ARM_CLIENT_SECRET')
         ARM_TENANT_ID       = credentials('ARM_TENANT_ID')
@@ -52,20 +52,24 @@ pipeline {
             }
         }
 
-       stage('Deploy App to Azure VM') {
-         steps {
-          echo 'Deploying app to Azure VM...'
+        stage('Deploy App to Azure VM') {
+            steps {
+                withCredentials([sshUserPrivateKey(
+                    credentialsId: 'my-ssh-cred-id',
+                    keyFileVariable: 'SSH_KEY',
+                    usernameVariable: 'SSH_USER')]) {
 
-        // Make sure ssh-agent service is running on Windows and your key is added:
-        // ssh-add C:\Users\divya\.ssh\id_rsa
+                    // Fix Windows key permissions
+                    bat 'icacls %SSH_KEY% /inheritance:r /grant:r "%USERNAME%:R"'
 
-        // Use ssh directly (no -i needed if key is loaded in ssh-agent)
-        bat '''
-        ssh -o StrictHostKeyChecking=no azureuser@52.234.153.165 "cd /app && git pull && nohup python3 app.py > app.log 2>&1 &"
-        '''
+                    bat '''
+                    echo Deploying app to Azure VM...
+                    ssh -o StrictHostKeyChecking=no -i %SSH_KEY% %SSH_USER%@52.234.153.165 "cd /app && git pull && nohup python3 app.py > app.log 2>&1 &"
+                    '''
+                }
+            }
+        }
     }
-}
-
 
     post {
         always {
