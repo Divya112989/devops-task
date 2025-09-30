@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        // Use Jenkins credentials for Azure SP
         ARM_CLIENT_ID       = credentials('ARM_CLIENT_ID')
         ARM_CLIENT_SECRET   = credentials('ARM_CLIENT_SECRET')
         ARM_TENANT_ID       = credentials('ARM_TENANT_ID')
@@ -18,15 +17,13 @@ pipeline {
 
         stage('Check Python') {
             steps {
-                bat '"C:\\Users\\divya\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" --version'
+                bat 'python --version'
             }
         }
 
         stage('Setup Python Environment') {
             steps {
-                // Create virtual environment
-                bat '"C:\\Users\\divya\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" -m venv venv'
-                // Install dependencies
+                bat 'python -m venv venv'
                 bat 'venv\\Scripts\\pip install -r requirements.txt'
             }
         }
@@ -40,9 +37,7 @@ pipeline {
         stage('Terraform Init & Plan') {
             steps {
                 dir('terraform') {
-                    // Initialize Terraform with backend
                     bat 'terraform init'
-                    // Plan with variable file
                     bat 'terraform plan'
                 }
             }
@@ -57,16 +52,15 @@ pipeline {
         }
 
         stage('Deploy App to Azure VM') {
-    steps {
-        sshagent(['my-ssh-cred-id']) {
-            sh '''
-                ssh -o StrictHostKeyChecking=no azureuser@52.234.153.165 "cd /app && git pull && nohup python3 app.py > app.log 2>&1 &"
-            '''
+            steps {
+                sshagent(['my-ssh-cred-id']) {
+                    bat '''
+                        ssh -o StrictHostKeyChecking=no azureuser@52.234.153.165 "cd /app && git pull && nohup python3 app.py > app.log 2>&1 &"
+                    '''
+                }
+            }
         }
     }
-}
-
-    } // end of stages
 
     post {
         always {
