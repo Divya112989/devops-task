@@ -53,14 +53,13 @@ pipeline {
         }
 
         stage('Deploy App to Azure VM') {
-            steps {
-                bat '''
-                echo Deploying app to Azure VM...
-                ssh -i C:\\Jenkins\\keys\\id_rsa -o StrictHostKeyChecking=no azureuser@52.234.153.165 "cd /app && git pull && nohup python3 app.py > app.log 2>&1 &"
-                '''
-            }
-        }
+    steps {
+        bat '''
+        echo Deploying app to Azure VM...
+        ssh -i C:\\Jenkins\\.ssh\\id_rsa -o StrictHostKeyChecking=no azureuser@52.234.153.165 "cd /app && git pull && nohup python3 app.py > app.log 2>&1 &"
+        '''
     }
+}
 
     post {
         always {
