@@ -54,17 +54,10 @@ pipeline {
 
         stage('Deploy App to Azure VM') {
             steps {
-                withCredentials([sshUserPrivateKey(
-                    credentialsId: 'my-ssh-cred-id',
-                    keyFileVariable: 'SSH_KEY',
-                    usernameVariable: 'SSH_USER')]) {
-
-                    // Fix Windows key permissions
-                    bat 'icacls %SSH_KEY% /inheritance:r /grant:r "%USERNAME%:R"'
-
+                sshagent(credentials: ['my-ssh-cred-id']) {
                     bat '''
                     echo Deploying app to Azure VM...
-                    ssh -o StrictHostKeyChecking=no -i %SSH_KEY% %SSH_USER%@52.234.153.165 "cd /app && git pull && nohup python3 app.py > app.log 2>&1 &"
+                    ssh -o StrictHostKeyChecking=no azureuser@52.234.153.165 "cd /app && git pull && nohup python3 app.py > app.log 2>&1 &"
                     '''
                 }
             }
