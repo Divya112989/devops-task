@@ -35,6 +35,13 @@ pipeline {
             }
         }
 
+       stage('Check Terraform Version') {
+            steps {
+                bat 'terraform --version'
+            }
+        }
+
+
         stage('Terraform Init & Plan') {
             steps {
                 dir('terraform') {
@@ -66,7 +73,7 @@ pipeline {
 
     post {
         always {
-            echo 'Pipeline finished.'/
+            echo 'Pipeline finished.' 
         }
     }
 }
